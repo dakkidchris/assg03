@@ -84,3 +84,103 @@ void ld_img(char* fname, uint16_t offset);
 #endif
 
 #endif // LC3VM_H
+#ifndef LC3VM_H
+#define LC3VM_H
+
+#include <stdint.h>
+
+// memory
+extern uint16_t mem[];
+uint16_t mem_read(uint16_t address);
+void mem_write(uint16_t address, uint16_t value);
+
+#endif
+#define OPC(i) ((i) >> 12)
+
+#define DR(i) (((i) >> 9) & 0x7)
+#define SR1(i) (((i) >> 6) & 0x7)
+#define SR2(i) ((i) & 0x7)
+
+#define FIMM(i) ((i) & 0x20)
+
+// immediate / offsets
+#define SEXTIMM(i) sign_extend((i) & 0x1F, 5)
+#define OFF6(i) sign_extend((i) & 0x3F, 6)
+#define PCOFF9(i) sign_extend((i) & 0x1FF, 9)
+#define PCOFF11(i) sign_extend((i) & 0x7FF, 11)
+#ifndef LC3VM_H
+#define LC3VM_H
+
+#include <stdbool.h>
+#include <stdint.h>
+
+// ================= MEMORY =================
+extern uint16_t mem[];
+uint16_t mem_read(uint16_t address);
+void mem_write(uint16_t address, uint16_t value);
+
+// ================= REGISTERS =================
+enum registr
+{
+  R0 = 0,
+  R1,
+  R2,
+  R3,
+  R4,
+  R5,
+  R6,
+  R7,
+  RPC,
+  RCND,
+  RCNT
+};
+extern uint16_t reg[];
+
+enum flags
+{
+  FP = 1 << 0,
+  FZ = 1 << 1,
+  FN = 1 << 2
+};
+
+// ================= HELPERS =================
+uint16_t sign_extend(uint16_t bits, int size);
+void update_flags(enum registr r);
+
+// ================= MACROS =================
+#define OPC(i) ((i) >> 12)
+
+#define DR(i) (((i) >> 9) & 0x7)
+#define SR1(i) (((i) >> 6) & 0x7)
+#define SR2(i) ((i) & 0x7)
+
+#define FIMM(i) ((i) & 0x20)
+#define FL(i) ((i) & 0x800)
+
+#define SEXTIMM(i) sign_extend((i) & 0x1F, 5)
+#define OFF6(i) sign_extend((i) & 0x3F, 6)
+#define PCOFF9(i) sign_extend((i) & 0x1FF, 9)
+#define PCOFF11(i) sign_extend((i) & 0x7FF, 11)
+
+// ================= OPS =================
+typedef void (*op_ex_f)(uint16_t);
+
+void br(uint16_t i);
+void add(uint16_t i);
+void ld(uint16_t i);
+void st(uint16_t i);
+void jsr(uint16_t i);
+void andlc(uint16_t i);
+void ldr(uint16_t i);
+void str(uint16_t i);
+void notlc(uint16_t i);
+void ldi(uint16_t i);
+void sti(uint16_t i);
+void jmp(uint16_t i);
+void lea(uint16_t i);
+void trap(uint16_t i);
+
+// ================= VM =================
+void start(uint16_t offset);
+
+#endif
